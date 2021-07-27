@@ -3,6 +3,8 @@ title: "Fairness Definitions Explained"
 output: html_notebook
 ---
 
+Be sure that Miniconda and the necessary Python libraries are installed! You can do this by executing `./R/setup.R`.
+
 Load `reticulate` package.
 
 ```{r}
@@ -20,10 +22,8 @@ dataset.head()
 Create function.
 
 ```{python}
-
 def dataset_headers(dataset):
     return list(dataset.columns.values)
-    
 ```
 
 Call function.
