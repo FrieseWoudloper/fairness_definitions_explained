@@ -3,13 +3,32 @@ title: "Fairness Definitions Explained"
 output: html_notebook
 ---
 
-```{r, setup}
+Load `reticulate` package.
+
+```{r}
 library(reticulate)
 ```
+
+Read dataset.
 
 ```{python}
 import pandas as pd
 DATA_SET_PATH = "./inputs/german.csv"
 dataset = pd.read_csv(DATA_SET_PATH)
 dataset.head()
+```
+Create function.
+
+```{python}
+
+def dataset_headers(dataset):
+    return list(dataset.columns.values)
+    
+```
+
+Call function.
+
+```{python}
+headers = dataset_headers(dataset)
+print(headers)
 ```
