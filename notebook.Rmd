@@ -14,6 +14,7 @@ library(reticulate)
 Import python libraries.
 
 ```{python}
+import pandas as pd
 import numpy as np
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split, cross_val_score, cross_val_predict
@@ -56,7 +57,7 @@ dataset.drop('target', axis=1, inplace=True)                    # removes target
 dataset.drop('Personal-status-and-sex', axis=1, inplace = True) 
 dataset = pd.get_dummies(dataset, columns = ["Purpose", "Credit-history", "Other-debtors", "Property", "Other-installment-plans", "Housing", "Job", "Present-employment-since"])
 headers = dataset_headers(dataset)
-print(headers)
+dataset.head()
 ```
 
 Train model.
@@ -77,9 +78,9 @@ sc = StandardScaler()
 for train_index, test_index in rkf.split(df):
    train_x, test_x = df[train_index], df[test_index]
    train_y, test_y = z[train_index], z[test_index]
-   sc.fit(train_x)
-   X_train_std = sc.transform(train_x)
-   X_test_std = sc.transform(test_x)
+   sc.fit(train_x) # Scaler fitten
+   X_train_std = sc.transform(train_x) # Scaler toepassen op training set
+   X_test_std = sc.transform(test_x) # Scaler toepassen op test set
    trained_logistic_regression_model = train_logistic_regression(X_train_std, train_y) 
    coefficients = np.transpose(trained_logistic_regression_model.coef_[0])
    for f in range(len(coefficients)):
@@ -87,5 +88,46 @@ for train_index, test_index in rkf.split(df):
            weights[headers[f]].append(coefficients[f])
        else:
            weights[headers[f]] = [coefficients[f]]           # create a list here
-print(weights)
+```
+
+```{python}
+weight = []
+for i in weights:
+   weights[i] = sum(weights[i])*1.0/len(weights[i])
+   weight.append((i, weights[i]))
+# weight = sorted(weight, key=abs(a[1]), reverse=True)
+# for i in weight:
+#    print i
+# print '\n\n\n'
+```
+
+Let's give the {fairness} package a try.
+
+```{r}
+library(fairness)
+library(dplyr)
+data(germancredit)
+head(germancredit)
+```
+
+Calculate group fairness a.k.a. statistical parity a.k.a. proportional parity.
+
+```{r}
+germancredit %>%
+  group_by(Female) %>%
+  summarise(acceptance_rate = (n() - sum(predicted))/n()) %>%
+  mutate(statistical_parity = (acceptance_rate) / last(acceptance_rate))
+```
+```{r}
+data <- mutate(germancredit, outcome = ifelse(predicted == 0, 'Good', 'Bad'))
+```
+
+```{r}
+   prop_parity(
+      data         = data, 
+      outcome      = 'predicted',
+      group        = 'Female',
+      preds        = 'predicted',
+      outcome_base = 1,
+      base         = 'Male')
 ```
