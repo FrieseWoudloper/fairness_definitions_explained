@@ -1,1 +1,6 @@
 install.packages("reticulate")
+reticulate::install_miniconda()
+reticulate::py_install("pandas")
+reticulate::py_install("numpy")
+reticulate::py_install("seaborn")
+reticulate::py_install("scikit-learn")
