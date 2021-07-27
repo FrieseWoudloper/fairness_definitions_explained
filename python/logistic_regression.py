@@ -8,7 +8,8 @@ import numpy as np
 # import plotly.graph_objs as go
 # import matplotlib.pyplot as plt
 from sklearn import preprocessing
-from sklearn.cross_validation import train_test_split, cross_val_score, cross_val_predict # Werkt alleen in python 2.7 
+# from sklearn.cross_validation import train_test_split, cross_val_score, cross_val_predict # Depricated
+from sklearn.model_selection import train_test_split, cross_val_score, cross_val_predict
 from sklearn.model_selection import RepeatedKFold, KFold
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
