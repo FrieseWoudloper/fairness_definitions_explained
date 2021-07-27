@@ -115,16 +115,17 @@ Calculate group fairness a.k.a. statistical parity a.k.a. proportional parity.
 ```{r}
 germancredit %>%
   group_by(Female) %>%
-  summarise(acceptance_rate = (n() - sum(predicted))/n()) %>%
-  mutate(statistical_parity = (acceptance_rate) / last(acceptance_rate))
-```
-```{r}
-data <- mutate(germancredit, outcome = ifelse(predicted == 0, 'Good', 'Bad'))
+  summarise(acceptance_rate = 1 - (sum(predicted) / n())) %>%
+  ungroup %>%
+  mutate(statistical_parity = acceptance_rate / last(acceptance_rate))
 ```
 
+Calculate statistical parity using the {fairness} package.
+
 ```{r}
+germancredit %>% 
+   mutate(outcome = ifelse(predicted == 0, 'Good', 'Bad')) %>%
    prop_parity(
-      data         = data, 
       outcome      = 'predicted',
       group        = 'Female',
       preds        = 'predicted',
