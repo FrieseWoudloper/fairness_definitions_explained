@@ -24,7 +24,7 @@ from sklearn.feature_selection import RFE
 
 
 # Files
-DATA_SET_PATH = "../inputs/german.csv"
+DATA_SET_PATH = "./inputs/german.csv"
 
 
 def dataset_headers(dataset):
