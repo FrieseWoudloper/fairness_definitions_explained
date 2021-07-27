@@ -11,10 +11,24 @@ Load `reticulate` package.
 library(reticulate)
 ```
 
+Import python libraries.
+
+```{python}
+import numpy as np
+from sklearn import preprocessing
+from sklearn.model_selection import train_test_split, cross_val_score, cross_val_predict
+from sklearn.model_selection import RepeatedKFold, KFold
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn import metrics
+import copy
+from random import randint
+from sklearn.feature_selection import RFE
+```
+
 Read dataset.
 
 ```{python}
-import pandas as pd
 DATA_SET_PATH = "./inputs/german.csv"
 dataset = pd.read_csv(DATA_SET_PATH)
 dataset.head()
@@ -29,6 +43,49 @@ def dataset_headers(dataset):
 Call function.
 
 ```{python}
+header = dataset_headers(dataset)
+print(headers)
+```
+
+Preprocess data.
+
+```{python}
+dataset.target.replace([1, 2], [1, 0], inplace = True)          # this replaces 1 (good credit) with 1 and 2 (bad credit) with 0
+tar = dataset.target                                            # target is separated
+dataset.drop('target', axis=1, inplace=True)                    # removes target from it, so now dataset just contains the columns on which it has to be trained
+dataset.drop('Personal-status-and-sex', axis=1, inplace = True) 
+dataset = pd.get_dummies(dataset, columns = ["Purpose", "Credit-history", "Other-debtors", "Property", "Other-installment-plans", "Housing", "Job", "Present-employment-since"])
 headers = dataset_headers(dataset)
 print(headers)
+```
+
+Train model.
+
+```{python}
+weights = {}
+
+def train_logistic_regression(train_x, train_y):
+    logistic_regression_model = LogisticRegression(penalty='l2', C=1.0)
+    logistic_regression_model.fit(train_x, train_y)
+    return logistic_regression_model
+
+rkf = RepeatedKFold(n_splits = 10, n_repeats = 10, random_state = None)
+df = dataset.values          # converts it to a numpy array which is easier to handle
+z = tar.values                  # they are changed to numpy matrix in corresponding order, so no problem
+sc = StandardScaler()
+
+for train_index, test_index in rkf.split(df):
+   train_x, test_x = df[train_index], df[test_index]
+   train_y, test_y = z[train_index], z[test_index]
+   sc.fit(train_x)
+   X_train_std = sc.transform(train_x)
+   X_test_std = sc.transform(test_x)
+   trained_logistic_regression_model = train_logistic_regression(X_train_std, train_y) 
+   coefficients = np.transpose(trained_logistic_regression_model.coef_[0])
+   for f in range(len(coefficients)):
+       if headers[f] in weights:
+           weights[headers[f]].append(coefficients[f])
+       else:
+           weights[headers[f]] = [coefficients[f]]           # create a list here
+print(weights)
 ```
